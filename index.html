@@ -296,8 +296,8 @@ function construireArbre(cat, c){
     titre: o.si === "mvl" ? "Conseil sur place par le pharmacien (MVL)" : "Prise en charge sur place par le pharmacien", priorite: true,
     actions: ["Si le patient ne peut pas attendre : l'aviser que le pharmacien lui fera un retour d'ici 24 heures"] });
   // Pas de rendez-vous avec le pharmacien : il fait un retour au patient.
-  // P3 : dans 3 à 5 jours. P1 / P2 : d'ici 24 heures.
-  const delaiRetour = p === "P3" ? "dans 3 à 5 jours" : "d'ici 24 heures";
+  // P1 (ou non précisée) : d'ici 24 heures. P2 : dans 1 à 2 jours. P3 : dans 3 à 5 jours.
+  const delaiRetour = p === "P3" ? "dans 3 à 5 jours" : p === "P2" ? "dans 1 à 2 jours" : "d'ici 24 heures";
   const rdvPharm = () => fin("r_retour", { niveau: "warn", badge: "Retour du pharmacien",
     titre: "Le pharmacien fera un retour au patient " + delaiRetour, priorite: true, delaiAffiche: delaiRetour,
     actions: ["Aviser le patient que le pharmacien lui fera un retour " + delaiRetour] });
