@@ -60,10 +60,8 @@
   .facts div{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid #eef1f4;font-size:17px}
   .facts div:last-child{border-bottom:0}
   .facts b{min-width:150px;color:var(--muted);font-weight:600}
-  .actions{list-style:none;padding:0;margin:14px 0 0}
-  .actions li{margin:8px 0}
-  .actions label{display:flex;gap:10px;align-items:flex-start;cursor:pointer}
-  .actions input{width:22px;height:22px;margin-top:2px;flex:none}
+  .actions{list-style:disc;padding-left:26px;margin:14px 0 0}
+  .actions li{margin:8px 0;padding-left:4px}
   .nav{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
   .btn{padding:10px 16px;font-size:16px;font-weight:600;color:var(--text);border-radius:8px;border:2px solid #9aa5b1;background:#eef1f4;cursor:pointer}
   .btn.primary{background:var(--brand);color:#fff;border-color:var(--brand)}
@@ -500,7 +498,7 @@ function afficher(){
         <span class="badge">${esc(n.badge)}</span>
         <h2>${esc(n.titre)}</h2>
         ${facts ? `<div class="facts">${facts}</div>` : ""}
-        <ul class="actions">${(c && !n.sansEmpego && !n.actions.some(a => a.includes("Empego")) ? ["Remplir le formulaire dans Empego", ...n.actions] : n.actions).map(a => `<li><label><input type="checkbox"> <span>${esc(a)}</span></label></li>`).join("")}</ul>
+        <ul class="actions">${(c && !n.sansEmpego && !n.actions.some(a => a.includes("Empego")) ? ["Remplir le formulaire dans Empego", ...n.actions] : n.actions).map(a => `<li>${esc(a)}</li>`).join("")}</ul>
         ${recap ? `<div class="recap"><h4>Résumé des réponses</h4><ol>${recap}</ol></div>` : ""}
         ${nav}
       </div>`;
