@@ -229,7 +229,7 @@ const CATEGORIES = [
 ];
 
 const NON_PRISES_EN_CHARGE = [
-  "Bronchite, pneumonie",
+  "Bronchite, pneumonie (prescrire antibiotique)",
   "Cellulite (non liée à une piqûre d'insecte)",
   "ITSS (traitement gonorrhée et chlamydia)",
   "Otite moyenne (antibiotiques oraux)",
@@ -264,8 +264,8 @@ const ARBRES = {
           { texte: "Jamais eu d'infection urinaire / ne sait pas", suivant: "res_infirmiere" }
         ]},
       res_pharmacien: { type: "resultat", niveau: "ok", badge: "Condition remplie",
-        titre: "Voir le pharmacien sur place", priorite: true,
-        actions: ["Remplir le formulaire dans Empego"] },
+        titre: "Prise en charge sur place par le pharmacien", priorite: true, surPlace: true,
+        actions: ["Remplir le formulaire dans Empego", "Si la patiente ne peut pas attendre : l'aviser que le pharmacien lui fera un retour d'ici 24 heures"] },
       res_infirmiere: { type: "resultat", niveau: "warn", badge: "Condition non remplie",
         titre: "Test urinaire avec l'infirmière",
         actions: ["Donner un rendez-vous avec l'infirmière pour le test urinaire", "Noter le rendez-vous au dossier"] },
@@ -293,11 +293,14 @@ function construireArbre(cat, c){
 
   // Résultats possibles
   const surPlace = () => fin("r_place", { niveau: "ok", badge: "Patient sur place", surPlace: true,
-    titre: o.si === "mvl" ? "Conseil sur place par le pharmacien (MVL)" : "Voir le pharmacien sur place", priorite: true,
-    actions: [] });
-  const rdvPharm = () => fin("r_rdv", { niveau: "warn", badge: "Sur rendez-vous",
-    titre: "Prendre un rendez-vous avec le pharmacien", priorite: true,
-    actions: ["Donner un rendez-vous avec le pharmacien" + (p ? " (" + PRIORITES[p].toLowerCase() + ")" : "")] });
+    titre: o.si === "mvl" ? "Conseil sur place par le pharmacien (MVL)" : "Prise en charge sur place par le pharmacien", priorite: true,
+    actions: ["Si le patient ne peut pas attendre : l'aviser que le pharmacien lui fera un retour d'ici 24 heures"] });
+  // Pas de rendez-vous avec le pharmacien : il fait un retour au patient.
+  // P3 : dans 3 à 5 jours. P1 / P2 : d'ici 24 heures.
+  const delaiRetour = p === "P3" ? "dans 3 à 5 jours" : "d'ici 24 heures";
+  const rdvPharm = () => fin("r_retour", { niveau: "warn", badge: "Retour du pharmacien",
+    titre: "Le pharmacien fera un retour au patient " + delaiRetour, priorite: true, delaiAffiche: delaiRetour,
+    actions: ["Aviser le patient que le pharmacien lui fera un retour " + delaiRetour] });
   const rdvInf = () => fin("r_inf", { niveau: "warn", badge: "Sur rendez-vous",
     titre: "Prendre un rendez-vous avec l'infirmière", priorite: true,
     actions: ["Donner un rendez-vous avec l'infirmière" + (o.delai ? " — " + o.delai.toLowerCase() : ""), ...(o.extra ? [o.extra] : [])] });
@@ -488,7 +491,7 @@ function afficher(){
     const p = n.surPlace ? "P1" : (c ? c[1] : null), o = c ? (c[3] || {}) : {};
     let facts = "";
     if (c) {
-      if (n.priorite !== false) facts += `<div><b>Priorité</b><span>${p ? pb(p) + " " + PRIORITES[p] : "Non précisée"}</span></div>`;
+      if (n.priorite !== false) facts += `<div><b>Priorité</b><span>${p ? pb(p) + " " + (n.delaiAffiche ? "Retour " + n.delaiAffiche : PRIORITES[p]) : (n.delaiAffiche ? "Retour " + n.delaiAffiche : "Non précisée")}</span></div>`;
       if (o.delai) facts += `<div><b>Délai idéal</b><span>${esc(o.delai)}</span></div>`;
       if (o.suivi) facts += `<div><b>Prochain suivi</b><span>${esc(o.suivi)}</span></div>`;
     }
