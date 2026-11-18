@@ -265,7 +265,7 @@ const ARBRES = {
         ]},
       res_pharmacien: { type: "resultat", niveau: "ok", badge: "Condition remplie",
         titre: "Voir le pharmacien sur place", priorite: true,
-        actions: ["Remplir le formulaire dans Empego", "Aviser le pharmacien que la patiente attend"] },
+        actions: ["Remplir le formulaire dans Empego"] },
       res_infirmiere: { type: "resultat", niveau: "warn", badge: "Condition non remplie",
         titre: "Test urinaire avec l'infirmière",
         actions: ["Donner un rendez-vous avec l'infirmière pour le test urinaire", "Noter le rendez-vous au dossier"] },
@@ -294,7 +294,7 @@ function construireArbre(cat, c){
   // Résultats possibles
   const surPlace = () => fin("r_place", { niveau: "ok", badge: "Patient sur place", surPlace: true,
     titre: o.si === "mvl" ? "Conseil sur place par le pharmacien (MVL)" : "Voir le pharmacien sur place", priorite: true,
-    actions: ["Aviser le pharmacien que le patient attend"] });
+    actions: [] });
   const rdvPharm = () => fin("r_rdv", { niveau: "warn", badge: "Sur rendez-vous",
     titre: "Prendre un rendez-vous avec le pharmacien", priorite: true,
     actions: ["Donner un rendez-vous avec le pharmacien" + (p ? " (" + PRIORITES[p].toLowerCase() + ")" : "")] });
