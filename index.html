@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="fr-CA">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guide d'accueil – Techniciens</title>
+<meta name="theme-color" content="#0b6e4f">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Guide Accueil">
+<style>
+  :root{
+    --bg:#f4f6f8; --card:#fff; --text:#1d2733; --muted:#5b6775; --border:#d9dee4;
+    --brand:#0b6e4f; --brand-2:#e6f3ee;
+    --ok:#0b6e4f; --ok-bg:#e6f3ee;
+    --warn:#a35a00; --warn-bg:#fff3e0;
+    --stop:#b3261e; --stop-bg:#fdeceb;
+    --info:#1f5fa8; --info-bg:#e8f0fb;
+    --p1:#b3261e; --p2:#c26a00; --p3:#1f5fa8;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);font-size:18px;line-height:1.45}
+  header{background:var(--brand);color:#fff;padding:14px 20px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:5}
+  header h1{font-size:20px;margin:0;flex:1}
+  header button{background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.5);border-radius:8px;padding:8px 14px;font-size:16px;cursor:pointer}
+  .legend{background:#fff;border-bottom:1px solid var(--border);padding:8px 20px;font-size:14px;display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
+  main{max-width:760px;margin:20px auto;padding:0 14px}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px;box-shadow:0 1px 3px rgba(0,0,0,.05);margin-bottom:16px}
+  .step{color:var(--muted);font-size:15px;margin-bottom:6px}
+  h2{margin:0 0 10px;font-size:23px}
+  h3.section{font-size:15px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:22px 0 10px}
+  .help{color:var(--muted);margin:0 0 16px}
+  .note{background:#fff8e1;border:1px solid #f0d58a;border-radius:10px;padding:10px 14px;font-size:16px;margin:0 0 16px}
+  ul.list{margin:0 0 18px;padding-left:22px}
+  ul.list li{margin:4px 0}
+  .options{display:grid;gap:12px}
+  .opt{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;text-align:left;padding:16px 18px;font-size:19px;font-weight:600;color:var(--brand);border-radius:12px;border:2px solid var(--brand);background:var(--brand-2);cursor:pointer;box-shadow:0 2px 0 rgba(11,110,79,.25)}
+  .opt::after{content:"›";font-size:28px;line-height:1}
+  .opt:hover,.opt:focus-visible{background:var(--brand);color:#fff;outline:none}
+  .opt .lbl{flex:1}
+  .opt.grey{color:var(--text);border-color:#9aa5b1;background:#eef1f4;box-shadow:0 2px 0 rgba(0,0,0,.12)}
+  .opt.grey:hover,.opt.grey:focus-visible{background:#5b6775;color:#fff}
+  .opt.red{color:var(--stop);border-color:var(--stop);background:var(--stop-bg);box-shadow:0 2px 0 rgba(179,38,30,.2)}
+  .opt.red:hover,.opt.red:focus-visible{background:var(--stop);color:#fff}
+  .pbadge{flex:none;font-size:14px;font-weight:700;color:#fff;border-radius:999px;padding:3px 10px}
+  .pbadge.P1{background:var(--p1)} .pbadge.P2{background:var(--p2)} .pbadge.P3{background:var(--p3)} .pbadge.NA{background:#8a949e}
+  .search{width:100%;font-size:19px;padding:14px 16px;border-radius:12px;border:2px solid #9aa5b1;margin-bottom:6px}
+  .search:focus{outline:none;border-color:var(--brand)}
+  .small{font-size:14px;color:var(--muted);font-weight:400;display:block}
+  .result{border-left:8px solid}
+  .result.ok{border-color:var(--ok);background:var(--ok-bg)}
+  .result.warn{border-color:var(--warn);background:var(--warn-bg)}
+  .result.stop{border-color:var(--stop);background:var(--stop-bg)}
+  .result.info{border-color:var(--info);background:var(--info-bg)}
+  .badge{display:inline-block;font-weight:700;font-size:14px;letter-spacing:.04em;text-transform:uppercase;padding:4px 10px;border-radius:999px;color:#fff;margin-bottom:10px}
+  .ok .badge{background:var(--ok)} .warn .badge{background:var(--warn)} .stop .badge{background:var(--stop)} .info .badge{background:var(--info)}
+  .facts{background:#fff;border:1px solid var(--border);border-radius:10px;padding:4px 16px;margin:14px 0}
+  .facts div{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid #eef1f4;font-size:17px}
+  .facts div:last-child{border-bottom:0}
+  .facts b{min-width:150px;color:var(--muted);font-weight:600}
+  .actions{list-style:none;padding:0;margin:14px 0 0}
+  .actions li{margin:8px 0}
+  .actions label{display:flex;gap:10px;align-items:flex-start;cursor:pointer}
+  .actions input{width:22px;height:22px;margin-top:2px;flex:none}
+  .nav{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
+  .btn{padding:10px 16px;font-size:16px;font-weight:600;color:var(--text);border-radius:8px;border:2px solid #9aa5b1;background:#eef1f4;cursor:pointer}
+  .btn.primary{background:var(--brand);color:#fff;border-color:var(--brand)}
+  .recap{margin-top:16px;background:#fff;border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:16px}
+  .recap h4{margin:0 0 6px;font-size:15px;color:var(--muted)}
+  .recap ol{margin:0;padding-left:20px}
+  .empty{color:var(--muted);padding:8px 2px}
+  .disclaimer{color:var(--muted);font-size:14px;margin:10px 14px 30px;text-align:center}
+</style>
+</head>
+<body>
+<header>
+  <h1>Guide d'accueil – Techniciens</h1>
+  <button id="homeBtn" type="button">Accueil</button>
+</header>
+<div class="legend">
+  <span><span class="pbadge P1">P1</span> Le jour même</span>
+  <span><span class="pbadge P2">P2</span> 1 à 2 jours</span>
+  <span><span class="pbadge P3">P3</span> 3 à 5 jours</span>
+</div>
+<main id="app"></main>
+<p class="disclaimer">Outil de triage interne (PL67). Il ne remplace pas le jugement du pharmacien.</p>
+
+<script>
+/* =====================================================================
+   DONNÉES — tableau PL67
+   Format d'une condition : [nom, priorité, patient sur place, options]
+     priorité         : "P1" | "P2" | "P3" | null (non précisée)
+     patient sur place : "O" (oui) | "N" (non / sur rendez-vous)
+     options :
+       si    : exception qui fait passer le patient « sur place »
+               (voir EXCEPTIONS plus bas)
+       inf   : "oui"   -> RDV avec l'infirmière
+               "suivi" -> RDV infirmière si un suivi est en cours
+               "si_possible" -> RDV infirmière, sinon sur place
+       suivi : délai du prochain suivi
+       delai : délai idéal (ex. voyage)
+       darwin: (non utilisé pour le moment)
+       arbre : questions sur mesure (ex. infection urinaire)
+   ===================================================================== */
+const PRIORITES = { P1: "Le jour même", P2: "Dans 1 à 2 jours", P3: "Dans 3 à 5 jours" };
+
+const EXCEPTIONS = {
+  rx_due: "La prescription (Rx) est-elle due aujourd'hui ?",
+  rx_due_urgent: "Situation urgente (hypoglycémies ++ ou hyperglycémies ++) OU prescription (Rx) due aujourd'hui ?",
+  mvl: "Un conseil sur un médicament en vente libre (MVL) suffit-il au patient ?",
+};
+
+const AJUST = { si: "rx_due", inf: "suivi", suivi: "1 mois min. — si stable, 6 mois" };
+
+const CATEGORIES = [
+  { nom: "Ajout Rx ou substitution Rx non tolérée",
+    note: "Pour les patients orphelins. Si le patient a un médecin de famille (MDF) : envoyer un fax.",
+    pre: "mdf",
+    conds: [
+      ["Diabète diagnostiqué", "P3", "N", { suivi: "1 mois min." }],
+      ["Dyslipidémie (cholestérol) diagnostiquée", "P3", "N", { suivi: "1 mois min." }],
+      ["HTA diagnostiquée", "P3", "N", { suivi: "1 mois min." }],
+      ["Migraine diagnostiquée et sous traitement de triptan (ajout prophylaxie 1re ligne)", "P3", "N", { suivi: "1 mois min." }]
+    ]},
+  { nom: "Ajustement Rx",
+    note: "Panier bleu foncé avec délai idem aux « passeras » – proposer SNP ou appeler lorsque prêt.",
+    conds: [
+      ["Ajustement Rx diabète", "P3", "N", { ...AJUST, si: "rx_due_urgent" }],
+      ["Ajustement Rx dépression / anxiété", "P3", "N", AJUST],
+      ["Ajustement Rx douleur chronique (ex. Lyrica)", "P3", "N", AJUST],
+      ["Ajustement Rx dyslipidémie", "P3", "N", AJUST],
+      ["Ajustement Rx HTA", "P3", "N", AJUST],
+      ["Ajustement Rx hypothyroïdie (Synthroid)", "P3", "N", AJUST],
+      ["Ajustement Rx migraine", "P3", "N", AJUST],
+      ["Ajustement Rx TDAH", "P3", "N", AJUST]
+    ]},
+  { nom: "Allergie", conds: [
+      ["EpiPen et Neffy (si allergie au dossier documentée, excluant administration urgente)", "P1", "O"]
+    ]},
+  { nom: "Bouche", conds: [
+      ["Aphtes buccaux (ulcère)", "P1", "O"],
+      ["Herpès labial (feu sauvage)", "P1", "O"],
+      ["Infection oro-pharyngée (muguet)", "P1", "O"]
+    ]},
+  { nom: "Contraception", conds: [
+      ["Contraception hormonale (prescrire 1 an si patiente < 21 ans, sinon 6 mois)", "P3", "N"],
+      ["Contraception orale d'urgence (COU)", "P1", "O"]
+    ]},
+  { nom: "Douleur", conds: [
+      ["Douleur légère à modérée", "P1", "O"],
+      ["Dysménorrhée (douleur menstruelle)", "P1", "O"]
+    ]},
+  { nom: "Gastro-intestinal", conds: [
+      ["Constipation", "P1", "O"],
+      ["Cytoprotection", "P2", "N"],
+      ["Dyspepsie (brûlure d'estomac et reflux)", "P1", "O"],
+      ["Enseignement colonoscopie", "P3", "N", { inf: "si_possible" }],
+      ["Hémorroïdes", "P1", "O"],
+      ["Nausées / vomissements de grossesse (si mal des transports : annexe II)", "P1", "O"],
+      ["Nausées / vomissements / diarrhées", "P1", "O"],
+      ["Oxyurose (vers)", "P1", "N"]
+    ]},
+  { nom: "Génital", conds: [
+      ["ITSS (partenaire asymptomatique)", "P1", "N", { confirme: "Le patient est-il un partenaire asymptomatique (aucun symptôme) ?",
+        refus: { badge: "Référer", titre: "Référer à une infirmière spécialisée ou à une clinique de santé sexuelle",
+          actions: ["Seuls les partenaires asymptomatiques sont pris en charge à la pharmacie",
+                    "Référer le patient à une infirmière spécialisée ou à une clinique de santé sexuelle"] } }],
+      ["Vaginite à levure", "P1", "N"],
+      ["Vaginose si condition connue (a déjà eu Rx renouvelable)", "P1", "O"]
+    ]},
+  { nom: "Gorge", conds: [
+      ["Streptocoque groupe A (traitement et gestion de la douleur)", "P2", "N", { inf: "oui", extra: "Le pharmacien peut conseiller sur place pour la douleur (MVL)" }]
+    ]},
+  { nom: "Infection voies respiratoires supérieures", conds: [
+      ["Influenza et COVID (traitement)", "P1", "N"],
+      ["Rhume (MVL)", "P1", "O"]
+    ]},
+  { nom: "Nez", conds: [
+      ["Rhinite allergique (cortico inhalé et ipratropium)", "P2", "N"]
+    ]},
+  { nom: "Œil", conds: [
+      ["Conjonctivite allergique", "P2", "N"],
+      ["Conjonctivite bactérienne", "P1", "O"]
+    ]},
+  { nom: "Oreille", conds: [
+      ["Irrigation de l'oreille", "P3", "N", { inf: "oui" }],
+      ["Otite externe (ex. otite du baigneur)", "P1", "O"]
+    ]},
+  { nom: "Peau", conds: [
+      ["Acné mineure", "P3", "N", { si: "mvl" }],
+      ["Candidose cutanée", "P2", "N", { si: "mvl" }],
+      ["Dermatite atopique (ex. eczéma)", "P2", "N", { si: "mvl" }],
+      ["Dermatite de contact (ex. timbres cutanés)", "P2", "N", { si: "mvl" }],
+      ["Dermatite séborrhéique", "P2", "N", { si: "mvl" }],
+      ["Érythème fessier", "P1", "O"],
+      ["Infection cutanée mineure (ex. impétigo, panaris)", "P2", "N", { si: "mvl" }],
+      ["Morsure de chat (prophylaxie)", "P1", "O", { urgence: { question: "La morsure date-t-elle de plus de 24 heures ?", oui: "Plus de 24 heures", non: "Moins de 24 heures" } }],
+      ["Mycose des plis (intertrigo)", "P2", "N", { si: "mvl" }],
+      ["Prophylaxie maladie de Lyme", "P1", "O"],
+      ["Onychomycose déjà diagnostiquée (infection fongique de l'ongle)", "P3", "N"],
+      ["Zona (traitement et soulagement de la douleur)", "P1", "O"]
+    ]},
+  { nom: "Piqûre d'insecte",
+    note: "Seule la cellulite causée par une piqûre d'insecte est prise en charge. Toute autre cellulite : non prise en charge.",
+    conds: [
+      ["Cellulite post-piqûre d'insecte", null, "N", { confirme: "La cellulite est-elle causée par une piqûre d'insecte ?" }]
+    ]},
+  { nom: "Tabac", conds: [
+      ["Cessation tabagique", "P3", "N"]
+    ]},
+  { nom: "Urinaire", conds: [
+      ["Infection urinaire", "P1", "O", { arbre: "infection_urinaire" }]
+    ]},
+  { nom: "Vitamines", conds: [
+      ["Calcium et vitamine D", "P3", "N"],
+      ["Supplément vitaminique périnatal (ex. Materna)", "P3", "O"]
+    ]},
+  { nom: "Voyage", conds: [
+      ["Diarrhée du voyageur", null, "N", { inf: "oui", delai: "Idéalement 4 semaines min. avant le départ" }],
+      ["Prophylaxie mal des montagnes", null, "N", { inf: "oui", delai: "Idéalement 4 semaines min. avant le départ" }],
+      ["Prophylaxie paludisme (malaria)", null, "N", { inf: "oui", delai: "Idéalement 4 semaines min. avant le départ" }],
+      ["Santé voyage complet", null, "N", { inf: "oui", delai: "Idéalement 4 semaines min. avant le départ" }]
+    ]},
+  { nom: "Autres", conds: [
+      ["Pédiculose (poux)", "P1", "O"],
+      ["Prophylaxie antibiotique porteur de valve", "P1", "O"],
+      ["Prophylaxie post-exposition accidentelle VIH", "P1", "O"]
+    ]}
+];
+
+const NON_PRISES_EN_CHARGE = [
+  "Bronchite, pneumonie",
+  "Cellulite (non liée à une piqûre d'insecte)",
+  "ITSS (traitement gonorrhée et chlamydia)",
+  "Otite moyenne (antibiotiques oraux)",
+  "Prophylaxie influenza",
+  "Sinusite (cortico nasal et traitement antibiotique)"
+];
+
+/* Arbres sur mesure ------------------------------------------------- */
+const ARBRES = {
+  infection_urinaire: {
+    depart: "sexe",
+    noeuds: {
+      sexe: { type: "question", titre: "Le patient est-il une femme ou un homme ?",
+        options: [
+          { texte: "Femme", suivant: "alarme" },
+          { texte: "Homme", suivant: "res_homme" }
+        ]},
+      alarme: { type: "question", titre: "La patiente présente-t-elle un de ces signes ?",
+        liste: ["Fièvre ou frissons", "Douleur au dos ou au flanc", "Nausées ou vomissements",
+                "Sang visible dans l'urine", "Grossesse (ou possibilité)"],
+        aide: "Liste à valider et ajuster par le pharmacien.",
+        options: [
+          { texte: "Oui, au moins un signe", suivant: "res_alarme" },
+          { texte: "Non, aucun", suivant: "delai" }
+        ]},
+      delai: { type: "question",
+        titre: "La dernière infection urinaire diagnostiquée remonte-t-elle à moins de 5 ans ?",
+        aide: "Demander à la patiente ou vérifier le dossier.",
+        options: [
+          { texte: "Oui, moins de 5 ans", suivant: "res_pharmacien" },
+          { texte: "Non, plus de 5 ans", suivant: "res_infirmiere" },
+          { texte: "Jamais eu d'infection urinaire / ne sait pas", suivant: "res_infirmiere" }
+        ]},
+      res_pharmacien: { type: "resultat", niveau: "ok", badge: "Condition remplie",
+        titre: "Voir le pharmacien sur place", priorite: true,
+        actions: ["Remplir le formulaire dans Empego", "Aviser le pharmacien que la patiente attend"] },
+      res_infirmiere: { type: "resultat", niveau: "warn", badge: "Condition non remplie",
+        titre: "Test urinaire avec l'infirmière",
+        actions: ["Donner un rendez-vous avec l'infirmière pour le test urinaire", "Noter le rendez-vous au dossier"] },
+      res_alarme: { type: "resultat", niveau: "stop", badge: "Signe d'alarme",
+        titre: "Aviser le pharmacien immédiatement",
+        actions: ["Ne pas faire attendre la patiente à l'accueil", "Le pharmacien décide de la suite"] },
+      res_homme: { ...RES_NON_PEC(), titre: "Infection urinaire chez l'homme : non prise en charge" }
+    }
+  }
+};
+
+function RES_NON_PEC(){
+  return { type: "resultat", niveau: "stop", badge: "Non prise en charge", sansEmpego: true, priorite: false,
+    titre: "Condition non prise en charge à la pharmacie",
+    actions: ["Référer le patient sur Clic Santé (liste des pharmacies qui offrent ce service) ou vers un médecin"] };
+}
+
+/* ===================== GÉNÉRATION DES PARCOURS ===================== */
+// Construit l'arbre de questions d'une condition à partir de ses colonnes.
+function construireArbre(cat, c){
+  const [nom, p, sp, o = {}] = c;
+  if (o.arbre) return ARBRES[o.arbre];
+  const n = {};
+  const fin = (cle, res) => { n[cle] = { type: "resultat", ...res }; return cle; };
+
+  // Résultats possibles
+  const surPlace = () => fin("r_place", { niveau: "ok", badge: "Patient sur place", surPlace: true,
+    titre: o.si === "mvl" ? "Conseil sur place par le pharmacien (MVL)" : "Voir le pharmacien sur place", priorite: true,
+    actions: ["Aviser le pharmacien que le patient attend"] });
+  const rdvPharm = () => fin("r_rdv", { niveau: "warn", badge: "Sur rendez-vous",
+    titre: "Prendre un rendez-vous avec le pharmacien", priorite: true,
+    actions: ["Donner un rendez-vous avec le pharmacien" + (p ? " (" + PRIORITES[p].toLowerCase() + ")" : "")] });
+  const rdvInf = () => fin("r_inf", { niveau: "warn", badge: "Sur rendez-vous",
+    titre: "Prendre un rendez-vous avec l'infirmière", priorite: true,
+    actions: ["Donner un rendez-vous avec l'infirmière" + (o.delai ? " — " + o.delai.toLowerCase() : ""), ...(o.extra ? [o.extra] : [])] });
+  const aVerifier = () => fin("r_verif", { niveau: "info", badge: "À vérifier",
+    titre: "Vérifier avec le pharmacien", priorite: true,
+    actions: ["Demander au pharmacien si le patient est vu sur place ou sur rendez-vous"] });
+
+  // Résultat « non sur place » : infirmière ou pharmacien
+  const pasSurPlace = () => o.inf === "oui" ? rdvInf() : rdvPharm();
+
+  let depart;
+  if (o.inf === "si_possible") {
+    n.q_inf = { type: "question", titre: "Un rendez-vous avec l'infirmière est-il possible ?",
+      options: [{ texte: "Oui", suivant: rdvInf() }, { texte: "Non", suivant: surPlace() }] };
+    depart = "q_inf";
+  } else if (o.si) {
+    n.q_si = { type: "question", titre: EXCEPTIONS[o.si],
+      options: [{ texte: "Oui", suivant: surPlace() }, { texte: "Non", suivant: pasSurPlace() }] };
+    depart = "q_si";
+  } else {
+    depart = sp === "O" ? surPlace() : sp === "N" ? pasSurPlace() : aVerifier();
+  }
+
+  // Suivi en cours -> ajouter RDV infirmière aux résultats
+  if (o.inf === "suivi") {
+    const suite = depart;
+    n.q_suivi = { type: "question", titre: "Un suivi est-il en cours (ex. prise de pression, glycémie) ?",
+      options: [{ texte: "Oui, suivi en cours", suivant: "s_" + suite }, { texte: "Non", suivant: suite }] };
+    // dupliquer les résultats avec l'action infirmière
+    Object.keys(n).filter(k => n[k].type === "resultat").forEach(k => {
+      n["s_" + k] = { ...n[k], actions: [...n[k].actions, "Donner aussi un rendez-vous avec l'infirmière pour le suivi"] };
+    });
+    // la question de suivi vient en dernier : on la branche après l'exception
+    if (n.q_si) {
+      n.q_suivi_o = { ...n.q_suivi, options: [{ texte: "Oui, suivi en cours", suivant: "s_r_place" }, { texte: "Non", suivant: "r_place" }] };
+      n.q_suivi_n = { ...n.q_suivi, options: [{ texte: "Oui, suivi en cours", suivant: "s_" + n.q_si.options[1].suivant }, { texte: "Non", suivant: n.q_si.options[1].suivant }] };
+      n.q_si.options[0].suivant = "q_suivi_o";
+      n.q_si.options[1].suivant = "q_suivi_n";
+      delete n.q_suivi;
+    } else depart = "q_suivi";
+  }
+
+  // Question de confirmation (ex. cellulite liée à une piqûre d'insecte)
+  if (o.confirme) {
+    n.q_conf = { type: "question", titre: o.confirme,
+      options: [{ texte: "Oui", suivant: depart }, { texte: "Non", suivant: fin("r_npec",
+        o.refus ? { niveau: "stop", sansEmpego: true, priorite: false, ...o.refus } : RES_NON_PEC()) }] };
+    depart = "q_conf";
+  }
+
+  // Question d'urgence (ex. morsure de chat > 24 h)
+  if (o.urgence) {
+    n.q_urg = { type: "question", titre: o.urgence.question,
+      options: [
+        { texte: o.urgence.oui, suivant: fin("r_urg", { niveau: "stop", badge: "Urgence", sansEmpego: true, priorite: false,
+            titre: "Diriger le patient vers l'urgence",
+            actions: ["Expliquer au patient qu'il doit se rendre à l'urgence", "Aviser le pharmacien"] }) },
+        { texte: o.urgence.non, suivant: depart }
+      ]};
+    depart = "q_urg";
+  }
+
+  // Médecin de famille (Ajout Rx)
+  if (cat.pre === "mdf") {
+    n.q_mdf = { type: "question", titre: "Le patient a-t-il un médecin de famille ?",
+      options: [
+        { texte: "Oui", suivant: fin("r_fax", { niveau: "info", badge: "Patient avec MDF",
+            titre: "Envoyer un fax au médecin de famille",
+            actions: ["Envoyer la demande par fax au médecin de famille", "Informer le patient du délai"] }) },
+        { texte: "Non, patient orphelin", suivant: depart }
+      ]};
+    depart = "q_mdf";
+  }
+  return { depart, noeuds: n };
+}
+
+/* ===================== AFFICHAGE ===================== */
+const app = document.getElementById("app");
+let vue = { ecran: "accueil" };
+
+function esc(s){ return String(s).replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch])); }
+const pb = p => `<span class="pbadge ${p || "NA"}">${p || "—"}</span>`;
+const norm = s => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+
+function boutonCond(ci, i){
+  const c = CATEGORIES[ci].conds[i];
+  return `<button class="opt" data-c="${ci}:${i}"><span class="lbl">${esc(c[0])}</span>${pb(c[1])}</button>`;
+}
+function brancher(){
+  app.querySelectorAll("[data-c]").forEach(b => b.onclick = () => {
+    const [ci, i] = b.dataset.c.split(":").map(Number); demarrer(ci, i);
+  });
+  app.querySelectorAll("[data-cat]").forEach(b => b.onclick = () => categorie(+b.dataset.cat));
+  app.querySelectorAll("[data-npec]").forEach(b => b.onclick = () => nonPec(b.dataset.npec));
+  const nl = document.getElementById("nonListee"); if (nl) nl.onclick = nonListee;
+}
+
+function accueil(){
+  vue = { ecran: "accueil" };
+  app.innerHTML = `<div class="card">
+      <h2>Pourquoi le patient se présente-t-il ?</h2>
+      <input id="q" class="search" type="search" placeholder="🔍 Rechercher une condition (ex. zona, feu sauvage)" autocomplete="off">
+      <div id="resultats"></div>
+      <h3 class="section">Catégories</h3>
+      <div class="options">${CATEGORIES.map((c, i) =>
+        `<button class="opt" data-cat="${i}"><span class="lbl">${esc(c.nom)}<span class="small">${c.conds.length} condition${c.conds.length > 1 ? "s" : ""}</span></span></button>`).join("")}
+        <button class="opt grey" id="nonListee"><span class="lbl">Condition non listée</span></button>
+      </div>
+      <h3 class="section">Conditions non prises en charge</h3>
+      <div class="options">${NON_PRISES_EN_CHARGE.map(t => `<button class="opt red" data-npec="${esc(t)}"><span class="lbl">${esc(t)}</span></button>`).join("")}</div>
+    </div>`;
+  brancher();
+  const q = document.getElementById("q"), r = document.getElementById("resultats");
+  q.oninput = () => {
+    const t = norm(q.value.trim());
+    if (!t) { r.innerHTML = ""; return; }
+    let h = "";
+    CATEGORIES.forEach((cat, ci) => cat.conds.forEach((c, i) => {
+      if (norm(c[0] + " " + cat.nom).includes(t)) h += boutonCond(ci, i);
+    }));
+    NON_PRISES_EN_CHARGE.forEach(n => { if (norm(n).includes(t)) h += `<button class="opt red" data-npec="${esc(n)}"><span class="lbl">${esc(n)}<span class="small">Non prise en charge</span></span></button>`; });
+    r.innerHTML = h ? `<div class="options" style="margin-top:10px">${h}</div>`
+      : `<p class="empty">Aucune condition trouvée. <button class="btn" id="nonListee">Condition non listée</button></p>`;
+    brancher();
+  };
+}
+
+function categorie(ci){
+  vue = { ecran: "categorie", ci };
+  const cat = CATEGORIES[ci];
+  app.innerHTML = `<div class="card">
+      <div class="step">Catégorie</div>
+      <h2>${esc(cat.nom)}</h2>
+      ${cat.note ? `<p class="note">${esc(cat.note)}</p>` : ""}
+      <div class="options">${cat.conds.map((_, i) => boutonCond(ci, i)).join("")}</div>
+      <div class="nav"><button class="btn" id="retour">← Catégories</button></div>
+    </div>`;
+  brancher();
+  document.getElementById("retour").onclick = accueil;
+}
+
+function demarrer(ci, i){
+  const cat = CATEGORIES[ci], c = cat.conds[i];
+  const arbre = construireArbre(cat, c);
+  vue = { ecran: "parcours", ci, i, arbre, historique: [], courant: arbre.depart };
+  afficher();
+}
+
+function nonPec(nom){
+  vue = { ecran: "parcours", titre: nom, arbre: { noeuds: { r: RES_NON_PEC() } }, historique: [], courant: "r", retourAccueil: true };
+  afficher();
+}
+function nonListee(){
+  vue = { ecran: "parcours", titre: "Condition non listée", historique: [], courant: "r", retourAccueil: true,
+    arbre: { noeuds: { r: { type: "resultat", niveau: "info", badge: "Condition non listée",
+      titre: "Non prise en charge — voir avec le pharmacien",
+      actions: ["Si la condition n'est pas dans la liste, elle n'est pas prise en charge", "En cas de doute, vérifier avec le pharmacien"] } } } };
+  afficher();
+}
+
+function afficher(){
+  const c = vue.ci !== undefined ? CATEGORIES[vue.ci].conds[vue.i] : null;
+  const titre = c ? c[0] : vue.titre;
+  const n = vue.arbre.noeuds[vue.courant];
+  const retourTxt = vue.historique.length ? "← Question précédente" : (vue.retourAccueil ? "← Accueil" : "← " + CATEGORIES[vue.ci].nom);
+  const nav = `<div class="nav">
+      <button class="btn" id="retour">${esc(retourTxt)}</button>
+      <button class="btn${n.type === "resultat" ? " primary" : ""}" id="nouveau">Nouveau patient</button>
+    </div>`;
+
+  if (n.type === "question") {
+    app.innerHTML = `<div class="card">
+        <div class="step">${esc(titre)} · Question ${vue.historique.length + 1}</div>
+        <h2>${esc(n.titre)}</h2>
+        ${n.liste ? `<ul class="list">${n.liste.map(l => `<li>${esc(l)}</li>`).join("")}</ul>` : ""}
+        ${n.aide ? `<p class="help">${esc(n.aide)}</p>` : ""}
+        <div class="options">${n.options.map((o, k) => `<button class="opt" data-k="${k}"><span class="lbl">${esc(o.texte)}</span></button>`).join("")}</div>
+        ${nav}
+      </div>`;
+    app.querySelectorAll("[data-k]").forEach(b => b.onclick = () => {
+      const o = n.options[+b.dataset.k];
+      vue.historique.push({ noeud: vue.courant, reponse: o.texte });
+      vue.courant = o.suivant;
+      afficher();
+    });
+  } else {
+    // Patient vu sur place = toujours P1 (le jour même)
+    const p = n.surPlace ? "P1" : (c ? c[1] : null), o = c ? (c[3] || {}) : {};
+    let facts = "";
+    if (c) {
+      if (n.priorite !== false) facts += `<div><b>Priorité</b><span>${p ? pb(p) + " " + PRIORITES[p] : "Non précisée"}</span></div>`;
+      if (o.delai) facts += `<div><b>Délai idéal</b><span>${esc(o.delai)}</span></div>`;
+      if (o.suivi) facts += `<div><b>Prochain suivi</b><span>${esc(o.suivi)}</span></div>`;
+    }
+    const recap = vue.historique.map(h => `<li>${esc(vue.arbre.noeuds[h.noeud].titre)} <strong>${esc(h.reponse)}</strong></li>`).join("");
+    app.innerHTML = `<div class="card result ${n.niveau}">
+        <div class="step">${esc(titre)}</div>
+        <span class="badge">${esc(n.badge)}</span>
+        <h2>${esc(n.titre)}</h2>
+        ${facts ? `<div class="facts">${facts}</div>` : ""}
+        <ul class="actions">${(c && !n.sansEmpego && !n.actions.some(a => a.includes("Empego")) ? ["Remplir le formulaire dans Empego", ...n.actions] : n.actions).map(a => `<li><label><input type="checkbox"> <span>${esc(a)}</span></label></li>`).join("")}</ul>
+        ${recap ? `<div class="recap"><h4>Résumé des réponses</h4><ol>${recap}</ol></div>` : ""}
+        ${nav}
+      </div>`;
+  }
+  document.getElementById("retour").onclick = () => {
+    if (vue.historique.length) { vue.courant = vue.historique.pop().noeud; afficher(); }
+    else if (vue.retourAccueil) accueil();
+    else categorie(vue.ci);
+  };
+  document.getElementById("nouveau").onclick = accueil;
+  window.scrollTo(0, 0);
+}
+
+document.getElementById("homeBtn").onclick = accueil;
+accueil();
+
+// Application installable + hors ligne (ignoré si non supporté)
+if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
+  navigator.serviceWorker.register("sw.js").catch(() => {});
+}
+</script>
+</body>
+</html>
