@@ -329,7 +329,7 @@ function construireArbre(cat, c){
     ] });
   const rdvPharm = () => fin("r_retour", { niveau: "warn", titre: "", priorite: true, delaiAffiche: delaiRetour, sansEmpego: sansEmp,
     actions: [MAJ, ...L(EMPEGO), "Aviser le patient que le pharmacien lui fera un retour " + delaiRetour,
-              ...(p === "P3" ? ["Mettre dans le panier bleu pâle dans la chute pour le lendemain"] : [])] });
+              ...(p === "P3" || p === "P2" ? ["Mettre dans le panier bleu pâle dans la chute pour le lendemain"] : [])] });
   const rdvInf = () => fin("r_inf", { niveau: "warn", badge: "Sur rendez-vous", sansEmpego: sansEmp,
     titre: o.titreInf || "Prendre un rendez-vous avec l'infirmière", priorite: true,
     actions: L(MAJ, EMPEGO, (o.rdvTexte || "Donner un rendez-vous avec l'infirmière") + (o.delai ? " — " + o.delai.toLowerCase() : ""), o.extra) });
@@ -474,7 +474,7 @@ function categorie(ci){
   app.innerHTML = `<div class="card">
       <div class="step">Catégorie</div>
       <h2>${esc(cat.nom)}</h2>
-      ${cat.note ? `<div class="note">${cat.panier ? panierSVG(cat.panier) : '<span class="note-ico">⚠️</span>'}<div><div class="note-t">À retenir</div>${esc(cat.note)}</div></div>` : ""}
+      ${cat.note ? `<div class="note">${cat.panier ? panierSVG(cat.panier) : '<span class="note-ico">⚠️</span>'}<div><div class="note-t">IMPORTANT</div>${esc(cat.note)}</div></div>` : ""}
       <div class="options">${cat.conds.map((_, i) => boutonCond(ci, i)).join("")}</div>
       <div class="nav"><button class="btn" id="retour">← Catégories</button></div>
     </div>`;
@@ -508,7 +508,7 @@ function afficher(){
   const retourTxt = vue.historique.length ? "← Question précédente" : (vue.retourAccueil ? "← Accueil" : "← " + CATEGORIES[vue.ci].nom);
   const nav = `<div class="nav">
       <button class="btn" id="retour">${esc(retourTxt)}</button>
-      <button class="btn${n.type === "resultat" ? " primary" : ""}" id="nouveau">Nouveau patient</button>
+      <button class="btn${n.type === "resultat" ? " primary" : ""}" id="nouveau">✓ Terminé</button>
     </div>`;
 
   if (n.type === "question") {
