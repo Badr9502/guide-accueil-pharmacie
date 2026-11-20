@@ -36,6 +36,12 @@
   .note svg{flex:none;width:52px;height:52px}
   .note-ico{font-size:34px;flex:none}
   .note-t{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:#1f5fa8;margin-bottom:2px}
+  .fenetres{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+  @media (max-width:640px){.fenetres{grid-template-columns:1fr}}
+  .fen{background:#fff;border:2px solid var(--ok);border-radius:12px;padding:12px 14px}
+  .fen h3{margin:0 0 4px;font-size:18px;color:var(--ok)}
+  .fen .sous{font-size:15px;color:var(--muted);font-weight:600}
+  .fen .actions{margin-top:8px;font-size:17px}
   .badge.big{font-size:18px;padding:8px 16px;margin-bottom:6px}
   ul.list{margin:0 0 18px;padding-left:22px}
   ul.list li{margin:4px 0}
@@ -114,7 +120,7 @@ const EXCEPTIONS = {
   mvl: "Un conseil sur un médicament en vente libre (MVL) suffit-il au patient ?",
 };
 
-const AJUST = { si: "rx_due", inf: "suivi", suivi: "1 mois min. — si stable, 6 mois" };
+const AJUST = { si: "rx_due", inf: "suivi" };
 
 const CATEGORIES = [
   { nom: "Ajout Rx ou substitution Rx non tolérée",
@@ -170,7 +176,9 @@ const CATEGORIES = [
           actions: ["Seuls les partenaires asymptomatiques sont pris en charge à la pharmacie",
                     "Référer le patient à une infirmière spécialisée ou à une clinique de santé sexuelle"] } }],
       ["Vaginite à levure", "P1", "N"],
-      ["Vaginose si condition connue (a déjà eu Rx renouvelable)", "P1", "O"]
+      ["Vaginose si condition connue et déjà traitée il y a moins de 2 ans", "P1", "O", { exclusion: {
+        question: "Avez-vous un nouveau partenaire depuis moins de 3 à 6 mois ?", aide: "Question à poser à la patiente.",
+        res: { badge: "Consulter un médecin", actions: ["Nouveau partenaire depuis moins de 3 à 6 mois : diriger la patiente vers un médecin"] } } }]
     ]},
   { nom: "Gorge", conds: [
       ["Streptocoque groupe A (traitement et gestion de la douleur)", "P2", "N", { inf: "oui", extra: "Le pharmacien peut conseiller sur place pour la douleur (MVL)" }]
@@ -267,9 +275,12 @@ const ARBRES = {
           { texte: "Non, plus de 5 ans", suivant: "res_infirmiere" },
           { texte: "Jamais eu d'infection urinaire / ne sait pas", suivant: "res_infirmiere" }
         ]},
-      res_pharmacien: { type: "resultat", niveau: "ok", badge: "Condition remplie",
-        titre: "Prise en charge sur place par le pharmacien", priorite: true, surPlace: true,
-        actions: ["Remplir le formulaire dans Empego", "Si la patiente ne peut pas attendre : l'aviser que le pharmacien lui fera un retour d'ici 24 heures"] },
+      res_pharmacien: { type: "resultat", niveau: "ok", badge: "Condition remplie – prise en charge par le pharmacien",
+        titre: "", priorite: true, surPlace: true, fenetres: [
+          { titre: "Patiente sur place", actions: ["Mettre à jour le dossier", "Remplir le formulaire dans Empego si la patiente est d'accord",
+              "Si la patiente ne peut pas attendre : l'aviser que le pharmacien lui fera un retour le jour même"] },
+          { titre: "Patiente au téléphone", sous: "Prise en charge par le pharmacien", actions: ["Mettre à jour le dossier",
+              "Remplir le formulaire dans Empego si la patiente est d'accord", "Retour du pharmacien d'ici 24 heures"] } ] },
       res_infirmiere: { type: "resultat", niveau: "warn", badge: "Condition non remplie",
         titre: "Test urinaire avec l'infirmière",
         actions: ["Donner un rendez-vous avec l'infirmière pour le test urinaire", "Noter le rendez-vous au dossier"] },
@@ -295,28 +306,49 @@ function construireArbre(cat, c){
   const n = {};
   const fin = (cle, res) => { n[cle] = { type: "resultat", ...res }; return cle; };
 
-  // Résultats possibles
-  const surPlace = () => fin("r_place", { niveau: "ok", badge: "Patient sur place", surPlace: true,
-    titre: o.si === "mvl" ? "Conseil sur place par le pharmacien (MVL)" : "Prise en charge sur place par le pharmacien", priorite: true,
-    actions: ["Si le patient ne peut pas attendre : l'aviser que le pharmacien lui fera un retour d'ici 24 heures"] });
+  const MAJ = "Mettre à jour le dossier";
+  const EMPEGO = "Remplir le formulaire dans Empego si le patient est d'accord";
+  const MDF = "Le patient a-t-il un médecin de famille ? Si oui, l'ajouter au dossier. Sinon, cocher « Aucun MDF »";
+  const ajust = o.inf === "suivi"; // section Ajustement Rx
+
   // Pas de rendez-vous avec le pharmacien : il fait un retour au patient.
   // P1 (ou non précisée) : d'ici 24 heures. P2 : dans 1 à 2 jours. P3 : dans 3 à 5 jours.
   const delaiRetour = p === "P3" ? "dans 3 à 5 jours" : p === "P2" ? "dans 1 à 2 jours" : "d'ici 24 heures";
-  const rdvPharm = () => fin("r_retour", { niveau: "warn", badge: "Retour du pharmacien",
-    titre: "Le pharmacien fera un retour au patient " + delaiRetour, priorite: true, delaiAffiche: delaiRetour,
-    actions: ["Aviser le patient que le pharmacien lui fera un retour " + delaiRetour] });
+
+  // Patient pris en charge : 2 fenêtres côte à côte (sur place / au téléphone)
+  const surPlace = () => fin("r_place", { niveau: "ok", badge: "Prise en charge par le pharmacien", titre: "",
+    surPlace: true, priorite: true, fenetres: [
+      { titre: "Patient sur place", sous: o.si === "mvl" ? "Conseil sur place par le pharmacien (MVL)" : "",
+        actions: [MAJ, EMPEGO, "Si le patient ne peut pas attendre : l'aviser que le pharmacien lui fera un retour le jour même"] },
+      { titre: "Patient au téléphone", sous: "Prise en charge par le pharmacien",
+        actions: [MAJ, EMPEGO, "Retour du pharmacien d'ici 24 heures"] }
+    ] });
+  const rdvPharm = () => fin("r_retour", { niveau: "warn", titre: "", priorite: true, delaiAffiche: delaiRetour,
+    actions: [MAJ, EMPEGO, "Aviser le patient que le pharmacien lui fera un retour " + delaiRetour,
+              ...(p === "P3" ? ["Mettre dans le panier bleu pâle dans la chute pour le lendemain"] : [])] });
   const rdvInf = () => fin("r_inf", { niveau: "warn", badge: "Sur rendez-vous",
     titre: "Prendre un rendez-vous avec l'infirmière", priorite: true,
-    actions: ["Donner un rendez-vous avec l'infirmière" + (o.delai ? " — " + o.delai.toLowerCase() : ""), ...(o.extra ? [o.extra] : [])] });
-  const aVerifier = () => fin("r_verif", { niveau: "info", badge: "À vérifier",
-    titre: "Vérifier avec le pharmacien", priorite: true,
-    actions: ["Demander au pharmacien si le patient est vu sur place ou sur rendez-vous"] });
+    actions: [MAJ, EMPEGO, "Donner un rendez-vous avec l'infirmière" + (o.delai ? " — " + o.delai.toLowerCase() : ""), ...(o.extra ? [o.extra] : [])] });
 
   // Résultat « non sur place » : infirmière ou pharmacien
   const pasSurPlace = () => o.inf === "oui" ? rdvInf() : rdvPharm();
 
   let depart;
-  if (o.inf === "si_possible") {
+  if (ajust) {
+    // Ajustement Rx : urgent / Rx due -> sur place ; sinon suivi déjà en cours ? -> infirmière : pharmacien
+    const EMP_AJ = EMPEGO + " (formulaire d'ajustement)";
+    n.q_si = { type: "question", titre: EXCEPTIONS[o.si], options: [
+      { texte: "Oui", suivant: fin("r_place", { niveau: "ok", badge: "Patient sur place", surPlace: true,
+          titre: "Prise en charge sur place par le pharmacien", priorite: true,
+          actions: [MAJ, MDF, EMPEGO, "Si le patient ne peut pas attendre : l'aviser que le pharmacien lui fera un retour le jour même"] }) },
+      { texte: "Non", suivant: "q_suivi" } ] };
+    n.q_suivi = { type: "question", titre: "Un suivi est-il déjà en cours avec la pharmacie (ex. prise de pression, glycémie) ?", options: [
+      { texte: "Oui, suivi en cours", suivant: fin("r_suivi", { niveau: "warn", titre: "", priorite: true, delaiAffiche: delaiRetour,
+          actions: [MAJ, MDF, EMP_AJ, "Aviser le patient que l'infirmière lui fera un retour " + delaiRetour, "Panier bleu foncé dans le bureau de l'infirmière"] }) },
+      { texte: "Non", suivant: fin("r_retour", { niveau: "warn", titre: "", priorite: true, delaiAffiche: delaiRetour,
+          actions: [MAJ, MDF, EMP_AJ, "Aviser le patient que le pharmacien lui fera un retour " + delaiRetour] }) } ] };
+    depart = "q_si";
+  } else if (o.inf === "si_possible") {
     n.q_inf = { type: "question", titre: "Un rendez-vous avec l'infirmière est-il possible ?",
       options: [{ texte: "Oui", suivant: rdvInf() }, { texte: "Non", suivant: surPlace() }] };
     depart = "q_inf";
@@ -325,26 +357,15 @@ function construireArbre(cat, c){
       options: [{ texte: "Oui", suivant: surPlace() }, { texte: "Non", suivant: pasSurPlace() }] };
     depart = "q_si";
   } else {
-    depart = sp === "O" ? surPlace() : sp === "N" ? pasSurPlace() : aVerifier();
+    depart = sp === "O" ? surPlace() : pasSurPlace();
   }
 
-  // Suivi en cours -> ajouter RDV infirmière aux résultats
-  if (o.inf === "suivi") {
-    const suite = depart;
-    n.q_suivi = { type: "question", titre: "Un suivi est-il déjà en cours avec la pharmacie (ex. prise de pression, glycémie) ?",
-      options: [{ texte: "Oui, suivi en cours", suivant: "s_" + suite }, { texte: "Non", suivant: suite }] };
-    // dupliquer les résultats avec l'action infirmière
-    Object.keys(n).filter(k => n[k].type === "resultat").forEach(k => {
-      n["s_" + k] = { ...n[k], actions: [...n[k].actions, "Donner aussi un rendez-vous avec l'infirmière pour le suivi"] };
-    });
-    // la question de suivi vient en dernier : on la branche après l'exception
-    if (n.q_si) {
-      n.q_suivi_o = { ...n.q_suivi, options: [{ texte: "Oui, suivi en cours", suivant: "s_r_place" }, { texte: "Non", suivant: "r_place" }] };
-      n.q_suivi_n = { ...n.q_suivi, options: [{ texte: "Oui, suivi en cours", suivant: "s_" + n.q_si.options[1].suivant }, { texte: "Non", suivant: n.q_si.options[1].suivant }] };
-      n.q_si.options[0].suivant = "q_suivi_o";
-      n.q_si.options[1].suivant = "q_suivi_n";
-      delete n.q_suivi;
-    } else depart = "q_suivi";
+  // Question d'exclusion (ex. vaginose : nouveau partenaire -> médecin)
+  if (o.exclusion) {
+    n.q_excl = { type: "question", titre: o.exclusion.question, aide: o.exclusion.aide,
+      options: [{ texte: "Oui", suivant: fin("r_excl", { niveau: "stop", titre: "", sansEmpego: true, priorite: false, ...o.exclusion.res }) },
+                { texte: "Non", suivant: depart }] };
+    depart = "q_excl";
   }
 
   // Question de confirmation (ex. cellulite liée à une piqûre d'insecte)
@@ -513,10 +534,11 @@ function afficher(){
     const recap = vue.historique.map(h => `<li>${esc(vue.arbre.noeuds[h.noeud].titre)} <strong>${esc(h.reponse)}</strong></li>`).join("");
     app.innerHTML = `<div class="card result ${n.niveau}">
         <div class="step">${esc(titre)}</div>
-        <span class="badge${n.titre ? "" : " big"}">${esc(n.badge)}</span>
+        ${n.badge ? `<span class="badge${n.titre ? "" : " big"}">${esc(n.badge)}</span>` : ""}
         ${n.titre ? `<h2>${esc(n.titre)}</h2>` : ""}
         ${facts ? `<div class="facts">${facts}</div>` : ""}
-        <ul class="actions">${(c && !n.sansEmpego && !n.actions.some(a => a.includes("Empego")) ? ["Remplir le formulaire dans Empego", ...n.actions] : n.actions).map(a => `<li>${esc(a)}</li>`).join("")}</ul>
+        ${n.fenetres ? `<div class="fenetres">${n.fenetres.map(f => `<div class="fen"><h3>${esc(f.titre)}</h3>${f.sous ? `<div class="sous">${esc(f.sous)}</div>` : ""}<ul class="actions">${f.actions.map(a => `<li>${esc(a)}</li>`).join("")}</ul></div>`).join("")}</div>`
+          : `<ul class="actions">${(c && !n.sansEmpego && !n.actions.some(a => a.includes("Empego")) ? ["Mettre à jour le dossier", "Remplir le formulaire dans Empego si le patient est d'accord", ...n.actions] : n.actions).map(a => `<li>${esc(a)}</li>`).join("")}</ul>`}
         ${recap ? `<div class="recap"><h4>Résumé des réponses</h4><ol>${recap}</ol></div>` : ""}
         ${nav}
       </div>`;
