@@ -145,7 +145,7 @@ const CATEGORIES = [
       ["Ajustement Rx TDAH", "P3", "N", AJUST]
     ]},
   { nom: "Allergie", conds: [
-      ["EpiPen et Neffy (si allergie au dossier documentée, excluant administration urgente)", "P1", "O"]
+      ["EpiPen et Neffy (si allergie au dossier documentée, excluant administration urgente)", "P1", "O", { maj: "Mettre à jour le dossier (inscrire la nature de l'allergie pour laquelle le patient a besoin d'EpiPen / Neffy)" }]
     ]},
   { nom: "Bouche", conds: [
       ["Aphtes buccaux (ulcère)", "P1", "O"],
@@ -164,27 +164,28 @@ const CATEGORIES = [
       ["Constipation", "P1", "O"],
       ["Cytoprotection", "P2", "N"],
       ["Dyspepsie (brûlure d'estomac et reflux)", "P1", "O"],
-      ["Enseignement colonoscopie", "P3", "N", { inf: "si_possible" }],
+      ["Enseignement colonoscopie", "P3", "N", { inf: "si_possible", empego: false }],
       ["Hémorroïdes", "P1", "O"],
-      ["Nausées / vomissements de grossesse (si mal des transports : annexe II)", "P1", "O"],
-      ["Nausées / vomissements / diarrhées", "P1", "O"],
-      ["Oxyurose (vers)", "P1", "N"]
+      ["Nausées / vomissements de grossesse", "P1", "O"],
+      ["Nausées (si mal des transports : annexe II) / vomissements / diarrhées", "P1", "O"],
+      ["Oxyurose (vers)", "P1", "N", { maj: "Mettre à jour le dossier et le poids de tous les membres de la famille",
+        empego: "Remplir le formulaire dans Empego si le patient est d'accord (envoyer à une seule personne)" }]
     ]},
   { nom: "Génital", conds: [
       ["ITSS (partenaire asymptomatique)", "P1", "N", { confirme: "Le patient est-il un partenaire asymptomatique (aucun symptôme) ?",
-        refus: { badge: "Référer", titre: "Référer à une infirmière spécialisée ou à une clinique de santé sexuelle",
-          actions: ["Seuls les partenaires asymptomatiques sont pris en charge à la pharmacie",
-                    "Référer le patient à une infirmière spécialisée ou à une clinique de santé sexuelle"] } }],
-      ["Vaginite à levure", "P1", "N"],
+        refus: { badge: "Référer", titre: "Référer à un médecin, une infirmière spécialisée ou une clinique de santé sexuelle",
+          actions: ["Seuls les partenaires asymptomatiques sont pris en charge à la pharmacie"] } }],
+      ["Vaginite à levure", "P1", "O"],
       ["Vaginose si condition connue et déjà traitée il y a moins de 2 ans", "P1", "O", { exclusion: {
         question: "Avez-vous un nouveau partenaire depuis moins de 3 à 6 mois ?", aide: "Question à poser à la patiente.",
         res: { badge: "Consulter un médecin", actions: ["Nouveau partenaire depuis moins de 3 à 6 mois : diriger la patiente vers un médecin"] } } }]
     ]},
   { nom: "Gorge", conds: [
-      ["Streptocoque groupe A (traitement et gestion de la douleur)", "P2", "N", { inf: "oui", extra: "Le pharmacien peut conseiller sur place pour la douleur (MVL)" }]
+      ["Streptocoque groupe A (traitement et gestion de la douleur)", "P2", "N", { inf: "oui", titreInf: "Prendre un rendez-vous avec l'infirmière pour dépistage", rdvTexte: "Donner un rendez-vous avec l'infirmière et aviser des frais",
+        extra: "Le pharmacien peut conseiller sur place pour la douleur (MVL)" }]
     ]},
   { nom: "Infection voies respiratoires supérieures", conds: [
-      ["Influenza et COVID (traitement)", "P1", "N"],
+      ["Influenza et COVID (traitement)", "P1", "O"],
       ["Rhume (MVL)", "P1", "O"]
     ]},
   { nom: "Nez", conds: [
@@ -195,7 +196,7 @@ const CATEGORIES = [
       ["Conjonctivite bactérienne", "P1", "O"]
     ]},
   { nom: "Oreille", conds: [
-      ["Irrigation de l'oreille", "P3", "N", { inf: "oui" }],
+      ["Irrigation de l'oreille", "P3", "N", { inf: "oui", empego: false }],
       ["Otite externe (ex. otite du baigneur)", "P1", "O"]
     ]},
   { nom: "Peau", conds: [
@@ -306,8 +307,11 @@ function construireArbre(cat, c){
   const n = {};
   const fin = (cle, res) => { n[cle] = { type: "resultat", ...res }; return cle; };
 
-  const MAJ = "Mettre à jour le dossier";
-  const EMPEGO = "Remplir le formulaire dans Empego si le patient est d'accord";
+  const MAJ = o.maj || "Mettre à jour le dossier";
+  // empego: false -> ne s'applique pas ; texte -> formulation propre à la condition
+  const EMPEGO = o.empego === false ? null : (o.empego || "Remplir le formulaire dans Empego si le patient est d'accord");
+  const sansEmp = o.empego === false;
+  const L = (...a) => a.filter(Boolean);
   const MDF = "Le patient a-t-il un médecin de famille ? Si oui, l'ajouter au dossier. Sinon, cocher « Aucun MDF »";
   const ajust = o.inf === "suivi"; // section Ajustement Rx
 
@@ -319,16 +323,16 @@ function construireArbre(cat, c){
   const surPlace = () => fin("r_place", { niveau: "ok", badge: "Prise en charge par le pharmacien", titre: "",
     surPlace: true, priorite: true, fenetres: [
       { titre: "Patient sur place", sous: o.si === "mvl" ? "Conseil sur place par le pharmacien (MVL)" : "",
-        actions: [MAJ, EMPEGO, "Si le patient ne peut pas attendre : l'aviser que le pharmacien lui fera un retour le jour même"] },
+        actions: L(MAJ, EMPEGO, "Si le patient ne peut pas attendre : l'aviser que le pharmacien lui fera un retour le jour même") },
       { titre: "Patient au téléphone", sous: "Prise en charge par le pharmacien",
-        actions: [MAJ, EMPEGO, "Retour du pharmacien d'ici 24 heures"] }
+        actions: L(MAJ, EMPEGO, "Retour du pharmacien d'ici 24 heures") }
     ] });
-  const rdvPharm = () => fin("r_retour", { niveau: "warn", titre: "", priorite: true, delaiAffiche: delaiRetour,
-    actions: [MAJ, EMPEGO, "Aviser le patient que le pharmacien lui fera un retour " + delaiRetour,
+  const rdvPharm = () => fin("r_retour", { niveau: "warn", titre: "", priorite: true, delaiAffiche: delaiRetour, sansEmpego: sansEmp,
+    actions: [MAJ, ...L(EMPEGO), "Aviser le patient que le pharmacien lui fera un retour " + delaiRetour,
               ...(p === "P3" ? ["Mettre dans le panier bleu pâle dans la chute pour le lendemain"] : [])] });
-  const rdvInf = () => fin("r_inf", { niveau: "warn", badge: "Sur rendez-vous",
-    titre: "Prendre un rendez-vous avec l'infirmière", priorite: true,
-    actions: [MAJ, EMPEGO, "Donner un rendez-vous avec l'infirmière" + (o.delai ? " — " + o.delai.toLowerCase() : ""), ...(o.extra ? [o.extra] : [])] });
+  const rdvInf = () => fin("r_inf", { niveau: "warn", badge: "Sur rendez-vous", sansEmpego: sansEmp,
+    titre: o.titreInf || "Prendre un rendez-vous avec l'infirmière", priorite: true,
+    actions: L(MAJ, EMPEGO, (o.rdvTexte || "Donner un rendez-vous avec l'infirmière") + (o.delai ? " — " + o.delai.toLowerCase() : ""), o.extra) });
 
   // Résultat « non sur place » : infirmière ou pharmacien
   const pasSurPlace = () => o.inf === "oui" ? rdvInf() : rdvPharm();
