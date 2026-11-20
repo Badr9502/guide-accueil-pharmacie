@@ -32,7 +32,11 @@
   h2{margin:0 0 10px;font-size:23px}
   h3.section{font-size:15px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:22px 0 10px}
   .help{color:var(--muted);margin:0 0 16px}
-  .note{background:#fff8e1;border:1px solid #f0d58a;border-radius:10px;padding:10px 14px;font-size:16px;margin:0 0 16px}
+  .note{display:flex;gap:14px;align-items:center;background:#eaf2fd;border:2px solid #1f5fa8;border-left-width:10px;border-radius:12px;padding:14px 16px;font-size:18px;font-weight:600;color:#123f8c;margin:0 0 18px;box-shadow:0 2px 6px rgba(31,95,168,.15)}
+  .note svg{flex:none;width:52px;height:52px}
+  .note-ico{font-size:34px;flex:none}
+  .note-t{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:#1f5fa8;margin-bottom:2px}
+  .badge.big{font-size:18px;padding:8px 16px;margin-bottom:6px}
   ul.list{margin:0 0 18px;padding-left:22px}
   ul.list li{margin:4px 0}
   .options{display:grid;gap:12px}
@@ -114,16 +118,16 @@ const AJUST = { si: "rx_due", inf: "suivi", suivi: "1 mois min. — si stable, 6
 
 const CATEGORIES = [
   { nom: "Ajout Rx ou substitution Rx non tolérée",
-    note: "Pour les patients orphelins. Si le patient a un médecin de famille (MDF) : envoyer un fax.",
+    note: "Panier bleu pâle dans la chute pour le lendemain.", panier: "#9cc8f0",
     pre: "mdf",
     conds: [
-      ["Diabète diagnostiqué", "P3", "N", { suivi: "1 mois min." }],
-      ["Dyslipidémie (cholestérol) diagnostiquée", "P3", "N", { suivi: "1 mois min." }],
-      ["HTA diagnostiquée", "P3", "N", { suivi: "1 mois min." }],
-      ["Migraine diagnostiquée et sous traitement de triptan (ajout prophylaxie 1re ligne)", "P3", "N", { suivi: "1 mois min." }]
+      ["Diabète diagnostiqué", "P3", "N"],
+      ["Dyslipidémie (cholestérol) diagnostiquée", "P3", "N"],
+      ["HTA diagnostiquée", "P3", "N"],
+      ["Migraine diagnostiquée et sous traitement de triptan (ajout prophylaxie 1re ligne)", "P3", "N"]
     ]},
   { nom: "Ajustement Rx",
-    note: "Panier bleu foncé avec délai idem aux « passeras » – proposer SNP ou appeler lorsque prêt.",
+    note: "Panier bleu foncé avec délai idem aux « passeras » – proposer SNP ou appeler lorsque prêt.", panier: "#123f8c",
     conds: [
       ["Ajustement Rx diabète", "P3", "N", { ...AJUST, si: "rx_due_urgent" }],
       ["Ajustement Rx dépression / anxiété", "P3", "N", AJUST],
@@ -327,7 +331,7 @@ function construireArbre(cat, c){
   // Suivi en cours -> ajouter RDV infirmière aux résultats
   if (o.inf === "suivi") {
     const suite = depart;
-    n.q_suivi = { type: "question", titre: "Un suivi est-il en cours (ex. prise de pression, glycémie) ?",
+    n.q_suivi = { type: "question", titre: "Un suivi est-il déjà en cours avec la pharmacie (ex. prise de pression, glycémie) ?",
       options: [{ texte: "Oui, suivi en cours", suivant: "s_" + suite }, { texte: "Non", suivant: suite }] };
     // dupliquer les résultats avec l'action infirmière
     Object.keys(n).filter(k => n[k].type === "resultat").forEach(k => {
@@ -367,10 +371,19 @@ function construireArbre(cat, c){
   if (cat.pre === "mdf") {
     n.q_mdf = { type: "question", titre: "Le patient a-t-il un médecin de famille ?",
       options: [
-        { texte: "Oui", suivant: fin("r_fax", { niveau: "info", badge: "Patient avec MDF",
-            titre: "Envoyer un fax au médecin de famille",
-            actions: ["Envoyer la demande par fax au médecin de famille", "Informer le patient du délai"] }) },
-        { texte: "Non, patient orphelin", suivant: depart }
+        { texte: "Oui", suivant: fin("r_fax", { niveau: "info", badge: "Patient avec MDF", titre: "",
+            priorite: true, delaiAffiche: delaiRetour,
+            actions: ["Mettre à jour le dossier",
+                      "Inscrire le nom du médecin de famille au dossier",
+                      "Remplir le formulaire dans Empego si le patient est d'accord",
+                      "Retour du pharmacien " + delaiRetour.replace("dans", "d'ici") + ", à moins d'une condition urgente",
+                      "Le pharmacien enverra la demande par fax au médecin de famille (si cela s'applique)"] }) },
+        { texte: "Non (patient orphelin ou GAP)", suivant: fin("r_orph", { niveau: "warn", badge: "Patient orphelin ou GAP", titre: "",
+            priorite: true, delaiAffiche: delaiRetour,
+            actions: ["Mettre à jour le dossier",
+                      "Cocher « Aucun MDF » dans le complément",
+                      "Remplir le formulaire dans Empego si le patient est d'accord",
+                      "Retour du pharmacien " + delaiRetour.replace("dans", "d'ici") + ", à moins d'une condition urgente"] }) }
       ]};
     depart = "q_mdf";
   }
@@ -382,6 +395,8 @@ const app = document.getElementById("app");
 let vue = { ecran: "accueil" };
 
 function esc(s){ return String(s).replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch])); }
+// Petit panier de la couleur indiquée (rappel des paniers de la pharmacie)
+const panierSVG = c => `<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M20 26 L28 10 M44 26 L36 10" stroke="#5b6775" stroke-width="4" stroke-linecap="round"/><path d="M6 26h52l-6 28a4 4 0 0 1-4 3H16a4 4 0 0 1-4-3z" fill="${c}" stroke="#123f8c" stroke-width="2.5"/><path d="M22 34v14M32 34v14M42 34v14" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".7"/></svg>`;
 const pb = p => `<span class="pbadge ${p || "NA"}">${p || "—"}</span>`;
 const norm = s => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
@@ -434,7 +449,7 @@ function categorie(ci){
   app.innerHTML = `<div class="card">
       <div class="step">Catégorie</div>
       <h2>${esc(cat.nom)}</h2>
-      ${cat.note ? `<p class="note">${esc(cat.note)}</p>` : ""}
+      ${cat.note ? `<div class="note">${cat.panier ? panierSVG(cat.panier) : '<span class="note-ico">⚠️</span>'}<div><div class="note-t">À retenir</div>${esc(cat.note)}</div></div>` : ""}
       <div class="options">${cat.conds.map((_, i) => boutonCond(ci, i)).join("")}</div>
       <div class="nav"><button class="btn" id="retour">← Catégories</button></div>
     </div>`;
@@ -498,8 +513,8 @@ function afficher(){
     const recap = vue.historique.map(h => `<li>${esc(vue.arbre.noeuds[h.noeud].titre)} <strong>${esc(h.reponse)}</strong></li>`).join("");
     app.innerHTML = `<div class="card result ${n.niveau}">
         <div class="step">${esc(titre)}</div>
-        <span class="badge">${esc(n.badge)}</span>
-        <h2>${esc(n.titre)}</h2>
+        <span class="badge${n.titre ? "" : " big"}">${esc(n.badge)}</span>
+        ${n.titre ? `<h2>${esc(n.titre)}</h2>` : ""}
         ${facts ? `<div class="facts">${facts}</div>` : ""}
         <ul class="actions">${(c && !n.sansEmpego && !n.actions.some(a => a.includes("Empego")) ? ["Remplir le formulaire dans Empego", ...n.actions] : n.actions).map(a => `<li>${esc(a)}</li>`).join("")}</ul>
         ${recap ? `<div class="recap"><h4>Résumé des réponses</h4><ol>${recap}</ol></div>` : ""}
