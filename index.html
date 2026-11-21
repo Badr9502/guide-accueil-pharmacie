@@ -39,6 +39,9 @@
   .fenetres{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
   @media (max-width:640px){.fenetres{grid-template-columns:1fr}}
   .fen{background:#fff;border:2px solid var(--ok);border-radius:12px;padding:12px 14px}
+  .fen.tel{border-color:var(--info);background:#f3f7fd}
+  .fen.tel h3{color:var(--info)}
+  .fen-intro{margin:14px 0 0;font-weight:700;color:var(--muted);font-size:16px}
   .fen h3{margin:0 0 4px;font-size:18px;color:var(--ok)}
   .fen .sous{font-size:15px;color:var(--muted);font-weight:600}
   .fen .actions{margin-top:8px;font-size:17px}
@@ -342,9 +345,10 @@ function construireArbre(cat, c){
     // Ajustement Rx : urgent / Rx due -> sur place ; sinon suivi déjà en cours ? -> infirmière : pharmacien
     const EMP_AJ = EMPEGO + " (formulaire d'ajustement)";
     n.q_si = { type: "question", titre: EXCEPTIONS[o.si], options: [
-      { texte: "Oui", suivant: fin("r_place", { niveau: "ok", badge: "Patient sur place", surPlace: true,
-          titre: "Prise en charge sur place par le pharmacien", priorite: true,
-          actions: [MAJ, MDF, EMPEGO, "Si le patient ne peut pas attendre : l'aviser que le pharmacien lui fera un retour le jour même"] }) },
+      { texte: "Oui", suivant: fin("r_place", { niveau: "ok", badge: "Prise en charge par le pharmacien", titre: "",
+          surPlace: true, priorite: true, fenetres: [
+            { titre: "Patient sur place", actions: [MAJ, MDF, EMPEGO, "Si le patient ne peut pas attendre : l'aviser que le pharmacien lui fera un retour le jour même"] },
+            { titre: "Patient au téléphone", sous: "Prise en charge par le pharmacien", actions: [MAJ, MDF, EMPEGO, "Retour du pharmacien d'ici 24 heures"] } ] }) },
       { texte: "Non", suivant: "q_suivi" } ] };
     n.q_suivi = { type: "question", titre: "Un suivi est-il déjà en cours avec la pharmacie (ex. prise de pression, glycémie) ?", options: [
       { texte: "Oui, suivi en cours", suivant: fin("r_suivi", { niveau: "warn", titre: "", priorite: true, delaiAffiche: delaiRetour,
@@ -541,7 +545,7 @@ function afficher(){
         ${n.badge ? `<span class="badge${n.titre ? "" : " big"}">${esc(n.badge)}</span>` : ""}
         ${n.titre ? `<h2>${esc(n.titre)}</h2>` : ""}
         ${facts ? `<div class="facts">${facts}</div>` : ""}
-        ${n.fenetres ? `<div class="fenetres">${n.fenetres.map(f => `<div class="fen"><h3>${esc(f.titre)}</h3>${f.sous ? `<div class="sous">${esc(f.sous)}</div>` : ""}<ul class="actions">${f.actions.map(a => `<li>${esc(a)}</li>`).join("")}</ul></div>`).join("")}</div>`
+        ${n.fenetres ? `<p class="fen-intro">Selon la situation du patient :</p><div class="fenetres">${n.fenetres.map(f => `<div class="fen${/téléphone/.test(f.titre) ? " tel" : ""}"><h3>${/téléphone/.test(f.titre) ? "📞 " : "🧍 "}${esc(f.titre)}</h3>${f.sous ? `<div class="sous">${esc(f.sous)}</div>` : ""}<ul class="actions">${f.actions.map(a => `<li>${esc(a)}</li>`).join("")}</ul></div>`).join("")}</div>`
           : `<ul class="actions">${(c && !n.sansEmpego && !n.actions.some(a => a.includes("Empego")) ? ["Mettre à jour le dossier", "Remplir le formulaire dans Empego si le patient est d'accord", ...n.actions] : n.actions).map(a => `<li>${esc(a)}</li>`).join("")}</ul>`}
         ${recap ? `<div class="recap"><h4>Résumé des réponses</h4><ol>${recap}</ol></div>` : ""}
         ${nav}
