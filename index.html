@@ -41,6 +41,10 @@
   .fen{background:#fff;border:2px solid var(--ok);border-radius:12px;padding:12px 14px}
   .fen.tel{border-color:var(--info);background:#f3f7fd}
   .fen.tel h3{color:var(--info)}
+  .cases{display:grid;gap:8px;margin:0 0 18px}
+  .cases label{display:flex;gap:12px;align-items:center;padding:10px 12px;border:2px solid var(--border);border-radius:10px;cursor:pointer;background:#fff}
+  .cases input{width:24px;height:24px;flex:none;accent-color:var(--stop)}
+  .cases label:has(input:checked){border-color:var(--stop);background:var(--stop-bg);font-weight:600}
   .fen-intro{margin:14px 0 0;font-weight:700;color:var(--muted);font-size:16px}
   .fen h3{margin:0 0 4px;font-size:18px;color:var(--ok)}
   .fen .sous{font-size:15px;color:var(--muted);font-weight:600}
@@ -214,21 +218,17 @@ const CATEGORIES = [
       ["Mycose des plis (intertrigo)", "P2", "N", { si: "mvl" }],
       ["Prophylaxie maladie de Lyme", "P1", "O"],
       ["Onychomycose déjà diagnostiquée (infection fongique de l'ongle)", "P3", "N"],
-      ["Zona (traitement et soulagement de la douleur)", "P1", "O"]
-    ]},
-  { nom: "Piqûre d'insecte",
-    note: "Seule la cellulite causée par une piqûre d'insecte est prise en charge. Toute autre cellulite : non prise en charge.",
-    conds: [
-      ["Cellulite post-piqûre d'insecte", "P1", "N"]
+      ["Zona (traitement et soulagement de la douleur)", "P1", "O"],
+      ["Cellulite post-piqûre d'insecte (guêpe)", "P1", "N", { deuxFen: true }]
     ]},
   { nom: "Tabac", conds: [
-      ["Cessation tabagique", "P3", "N"]
+      ["Cessation tabagique", "P3", "N", { deuxFen: true }]
     ]},
   { nom: "Urinaire", conds: [
       ["Infection urinaire", "P1", "O", { arbre: "infection_urinaire" }]
     ]},
   { nom: "Vitamines", conds: [
-      ["Calcium et vitamine D", "P3", "N"],
+      ["Calcium et vitamine D", "P3", "N", { deuxFen: true }],
       ["Supplément vitaminique périnatal (ex. Materna)", "P3", "O"]
     ]},
   { nom: "Voyage", conds: [
@@ -264,9 +264,9 @@ const ARBRES = {
           { texte: "Homme", suivant: "res_homme" }
         ]},
       alarme: { type: "question", titre: "La patiente présente-t-elle un de ces signes ?",
+        cases: true,
         liste: ["Fièvre ou frissons", "Douleur au dos ou au flanc", "Nausées ou vomissements",
-                "Sang visible dans l'urine", "Grossesse (ou possibilité)"],
-        aide: "Liste à valider et ajuster par le pharmacien.",
+                "Grossesse (ou possibilité)", "Infection urinaire dans les 30 derniers jours", "Moins de 14 ans"],
         options: [
           { texte: "Oui, au moins un signe", suivant: "res_alarme" },
           { texte: "Non, aucun", suivant: "delai" }
@@ -288,9 +288,11 @@ const ARBRES = {
       res_infirmiere: { type: "resultat", niveau: "warn", badge: "Condition non remplie",
         titre: "Test urinaire avec l'infirmière",
         actions: ["Donner un rendez-vous avec l'infirmière pour le test urinaire", "Noter le rendez-vous au dossier"] },
-      res_alarme: { type: "resultat", niveau: "stop", badge: "Signe d'alarme",
-        titre: "Aviser le pharmacien immédiatement",
-        actions: ["Ne pas faire attendre la patiente à l'accueil", "Le pharmacien décide de la suite"] },
+      res_alarme: { type: "resultat", niveau: "stop", badge: "Signe d'alarme ou contre-indication", titre: "", priorite: true, fenetres: [
+          { titre: "Patiente sur place", actions: ["Mettre à jour le dossier", "Remplir le formulaire dans Empego si la patiente est d'accord",
+              "Faire attendre la patiente sur place", "Le pharmacien décide de la suite"] },
+          { titre: "Patiente au téléphone", actions: ["Mettre à jour le dossier", "Remplir le formulaire dans Empego si la patiente est d'accord",
+              "Aviser le pharmacien immédiatement : il décide de la suite"] } ] },
       res_homme: { ...RES_NON_PEC(), titre: "Infection urinaire chez l'homme : non prise en charge" }
     }
   }
@@ -330,9 +332,13 @@ function construireArbre(cat, c){
       { titre: "Patient au téléphone", sous: "Prise en charge par le pharmacien",
         actions: L(MAJ, EMPEGO, "Retour du pharmacien d'ici 24 heures") }
     ] });
-  const rdvPharm = () => fin("r_retour", { niveau: "warn", titre: "", priorite: true, delaiAffiche: delaiRetour, sansEmpego: sansEmp,
-    actions: [MAJ, ...L(EMPEGO), "Aviser le patient que le pharmacien lui fera un retour " + delaiRetour,
-              ...(p === "P3" || p === "P2" ? ["Mettre dans le panier bleu pâle dans la chute pour le lendemain"] : [])] });
+  const PANIER = p === "P3" || p === "P2" ? "Mettre dans le panier bleu pâle dans la chute pour le lendemain" : null;
+  const rdvPharm = () => o.deuxFen
+    ? fin("r_retour", { niveau: "warn", badge: "Prise en charge par le pharmacien", titre: "", priorite: true, delaiAffiche: delaiRetour, fenetres: [
+        { titre: "Patient sur place", actions: L(MAJ, EMPEGO, "Si le patient ne peut pas attendre : l'aviser que le pharmacien lui fera un retour " + delaiRetour, PANIER) },
+        { titre: "Patient au téléphone", actions: L(MAJ, EMPEGO, "Retour du pharmacien " + delaiRetour, PANIER) } ] })
+    : fin("r_retour", { niveau: "warn", titre: "", priorite: true, delaiAffiche: delaiRetour, sansEmpego: sansEmp,
+        actions: L(MAJ, EMPEGO, "Aviser le patient que le pharmacien lui fera un retour " + delaiRetour, PANIER) });
   const rdvInf = () => fin("r_inf", { niveau: "warn", badge: "Sur rendez-vous", sansEmpego: sansEmp,
     titre: o.titreInf || "Prendre un rendez-vous avec l'infirmière", priorite: true,
     actions: L(MAJ, EMPEGO, (o.rdvTexte || "Donner un rendez-vous avec l'infirmière") + (o.delai ? " — " + o.delai.toLowerCase() : ""), o.extra) });
@@ -451,7 +457,7 @@ function accueil(){
       <h3 class="section">Catégories</h3>
       <div class="options">${CATEGORIES.map((c, i) =>
         `<button class="opt" data-cat="${i}"><span class="lbl">${esc(c.nom)}<span class="small">${c.conds.length} condition${c.conds.length > 1 ? "s" : ""}</span></span></button>`).join("")}
-        <button class="opt grey" id="nonListee"><span class="lbl">Condition non listée</span></button>
+        <button class="opt grey" id="nonListee"><span class="lbl">Conditions non listées</span></button>
       </div>
       <h3 class="section">Conditions non prises en charge</h3>
       <div class="options">${NON_PRISES_EN_CHARGE.map(t => `<button class="opt red" data-npec="${esc(t)}"><span class="lbl">${esc(t)}</span></button>`).join("")}</div>
@@ -467,7 +473,7 @@ function accueil(){
     }));
     NON_PRISES_EN_CHARGE.forEach(n => { if (norm(n).includes(t)) h += `<button class="opt red" data-npec="${esc(n)}"><span class="lbl">${esc(n)}<span class="small">Non prise en charge</span></span></button>`; });
     r.innerHTML = h ? `<div class="options" style="margin-top:10px">${h}</div>`
-      : `<p class="empty">Aucune condition trouvée. <button class="btn" id="nonListee">Condition non listée</button></p>`;
+      : `<p class="empty">Aucune condition trouvée. <button class="btn" id="nonListee">Conditions non listées</button></p>`;
     brancher();
   };
 }
@@ -479,7 +485,8 @@ function categorie(ci){
       <div class="step">Catégorie</div>
       <h2>${esc(cat.nom)}</h2>
       ${cat.note ? `<div class="note">${cat.panier ? panierSVG(cat.panier) : '<span class="note-ico">⚠️</span>'}<div><div class="note-t">IMPORTANT</div>${esc(cat.note)}</div></div>` : ""}
-      <div class="options">${cat.conds.map((_, i) => boutonCond(ci, i)).join("")}</div>
+      <div class="options">${cat.conds.map((_, i) => boutonCond(ci, i)).join("")}
+        <button class="opt grey" id="nonListee"><span class="lbl">Conditions non listées</span></button></div>
       <div class="nav"><button class="btn" id="retour">← Catégories</button></div>
     </div>`;
   brancher();
@@ -498,10 +505,10 @@ function nonPec(nom){
   afficher();
 }
 function nonListee(){
-  vue = { ecran: "parcours", titre: "Condition non listée", historique: [], courant: "r", retourAccueil: true,
-    arbre: { noeuds: { r: { type: "resultat", niveau: "info", badge: "Condition non listée",
-      titre: "Non prise en charge — voir avec le pharmacien",
-      actions: ["Si la condition n'est pas dans la liste, elle n'est pas prise en charge", "En cas de doute, vérifier avec le pharmacien"] } } } };
+  vue = { ecran: "parcours", titre: "Conditions non listées", historique: [], courant: "r", retourAccueil: true,
+    arbre: { noeuds: { r: { type: "resultat", niveau: "info", badge: "Conditions non listées",
+      titre: "Voir avec le pharmacien",
+      actions: ["Si la condition n'est pas dans la liste, référer au pharmacien", "En cas de doute, vérifier avec le pharmacien"] } } } };
   afficher();
 }
 
@@ -519,7 +526,9 @@ function afficher(){
     app.innerHTML = `<div class="card">
         <div class="step">${esc(titre)} · Question ${vue.historique.length + 1}</div>
         <h2>${esc(n.titre)}</h2>
-        ${n.liste ? `<ul class="list">${n.liste.map(l => `<li>${esc(l)}</li>`).join("")}</ul>` : ""}
+        ${n.liste ? (n.cases
+          ? `<div class="cases">${n.liste.map(l => `<label><input type="checkbox"> <span>${esc(l)}</span></label>`).join("")}</div>`
+          : `<ul class="list">${n.liste.map(l => `<li>${esc(l)}</li>`).join("")}</ul>`) : ""}
         ${n.aide ? `<p class="help">${esc(n.aide)}</p>` : ""}
         <div class="options">${n.options.map((o, k) => `<button class="opt" data-k="${k}"><span class="lbl">${esc(o.texte)}</span></button>`).join("")}</div>
         ${nav}
@@ -545,7 +554,7 @@ function afficher(){
         ${n.badge ? `<span class="badge${n.titre ? "" : " big"}">${esc(n.badge)}</span>` : ""}
         ${n.titre ? `<h2>${esc(n.titre)}</h2>` : ""}
         ${facts ? `<div class="facts">${facts}</div>` : ""}
-        ${n.fenetres ? `<p class="fen-intro">Selon la situation du patient :</p><div class="fenetres">${n.fenetres.map(f => `<div class="fen${/téléphone/.test(f.titre) ? " tel" : ""}"><h3>${/téléphone/.test(f.titre) ? "📞 " : "🧍 "}${esc(f.titre)}</h3>${f.sous ? `<div class="sous">${esc(f.sous)}</div>` : ""}<ul class="actions">${f.actions.map(a => `<li>${esc(a)}</li>`).join("")}</ul></div>`).join("")}</div>`
+        ${n.fenetres ? `<p class="fen-intro">Selon la situation du patient :</p><div class="fenetres">${n.fenetres.map(f => `<div class="fen${/téléphone/.test(f.titre) ? " tel" : ""}"><h3>${/téléphone/.test(f.titre) ? "📞 " : "🧍 "}${esc(f.titre)}</h3><ul class="actions">${f.actions.map(a => `<li>${esc(a)}</li>`).join("")}</ul></div>`).join("")}</div>`
           : `<ul class="actions">${(c && !n.sansEmpego && !n.actions.some(a => a.includes("Empego")) ? ["Mettre à jour le dossier", "Remplir le formulaire dans Empego si le patient est d'accord", ...n.actions] : n.actions).map(a => `<li>${esc(a)}</li>`).join("")}</ul>`}
         ${recap ? `<div class="recap"><h4>Résumé des réponses</h4><ol>${recap}</ol></div>` : ""}
         ${nav}
