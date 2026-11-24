@@ -253,6 +253,79 @@ const NON_PRISES_EN_CHARGE = [
   "Sinusite (cortico nasal et traitement antibiotique)"
 ];
 
+/* MOTS-CLÉS pour la recherche ----------------------------------------
+   [partie du nom de la condition, "mots du quotidien que le patient peut dire"]
+   Pour ajouter des mots : les écrire dans la liste, séparés par des virgules. */
+const MOTS_CLES = [
+  ["Ajout Rx", ""],
+  ["diabète", "sucre, glycémie, insuline, metformine, hypoglycémie, hyperglycémie"],
+  ["Dyslipidémie", "cholestérol, statine, lipides, gras dans le sang"],
+  ["HTA", "pression, haute pression, tension, hypertension"],
+  ["Migraine", "mal de tête, céphalée, triptan"],
+  ["dépression", "déprime, stress, angoisse, antidépresseur, humeur, panique"],
+  ["douleur chronique", "lyrica, prégabaline, douleur nerveuse, fibromyalgie, neuropathie"],
+  ["hypothyroïdie", "thyroïde, synthroid, lévothyroxine, tsh"],
+  ["TDAH", "déficit d'attention, hyperactivité, concerta, vyvanse, ritalin"],
+  ["EpiPen", "allergie, anaphylaxie, auto-injecteur, épinéphrine, adrénaline, arachides, noix, abeille"],
+  ["Aphtes", "ulcère dans la bouche, plaie dans la bouche, bobo dans la bouche, lésion bouche"],
+  ["Herpès labial", "feu sauvage, bouton de fièvre, bouton sur la lèvre, lèvre"],
+  ["muguet", "candidose bouche, champignon bouche, langue blanche, plaques blanches"],
+  ["Contraception hormonale", "pilule, anovulant, contraceptif, timbre, anneau, stérilet"],
+  ["Contraception orale d'urgence", "pilule du lendemain, plan b, relation non protégée, condom brisé"],
+  ["Douleur légère", "mal, douleur, mal de dos, mal de tête, tylenol, advil, ibuprofène, acétaminophène, entorse"],
+  ["Dysménorrhée", "menstruations, règles, crampes menstruelles, mal de ventre"],
+  ["Constipation", "selles dures, pas capable d'aller à la selle, laxatif"],
+  ["Cytoprotection", "protection de l'estomac, anti-inflammatoire, ains, ulcère d'estomac"],
+  ["Dyspepsie", "brûlures d'estomac, reflux, acidité, rgo, indigestion"],
+  ["colonoscopie", "coloscopie, préparation, purgatif, examen de l'intestin"],
+  ["Hémorroïdes", "anus, fesses, saignement anal, démangeaisons anales"],
+  ["de grossesse", "enceinte, mal de cœur, vomissements"],
+  ["diarrhées", "gastro, mal de cœur, vomir, mal des transports, mal de mer, dramamine, mal de ventre"],
+  ["Oxyurose", "vers, démangeaisons anales, parasites, enfant"],
+  ["ITSS", "chlamydia, gonorrhée, mts, its, partenaire, infection transmise sexuellement"],
+  ["Vaginite", "infection vaginale, champignon, candidose vaginale, démangeaisons vaginales, pertes blanches"],
+  ["Vaginose", "infection vaginale, pertes, odeur, vaginose bactérienne"],
+  ["Streptocoque", "mal de gorge, pharyngite, amygdalite, strep"],
+  ["Influenza", "grippe, covid, fièvre, paxlovid, tamiflu, virus"],
+  ["Rhume", "mal de gorge, nez qui coule, congestion, nez bouché, toux, éternuements, virus"],
+  ["Rhinite allergique", "allergies saisonnières, pollen, rhume des foins, nez qui coule, éternuements, congestion"],
+  ["Conjonctivite allergique", "yeux rouges, yeux qui piquent, allergie aux yeux, œil"],
+  ["Conjonctivite bactérienne", "yeux rouges, œil collé, pus dans l'œil, infection de l'œil"],
+  ["Irrigation", "bouchon de cire, cérumen, oreille bouchée, lavage d'oreille"],
+  ["Otite externe", "oreille du baigneur, mal d'oreille, infection d'oreille, oreille qui coule"],
+  ["Acné", "boutons, points noirs, peau"],
+  ["Candidose cutanée", "champignon sur la peau, infection de la peau, rougeur dans les plis"],
+  ["Dermatite atopique", "eczéma, peau sèche, démangeaisons, plaques rouges"],
+  ["Dermatite de contact", "allergie de peau, réaction de peau, rougeur, irritation, rash"],
+  ["Dermatite séborrhéique", "pellicules, croûtes de lait, cuir chevelu, peau grasse"],
+  ["Érythème fessier", "fesses de bébé, irritation de couche, rougeur bébé"],
+  ["Infection cutanée", "infection de la peau, impétigo, panaris, plaie infectée, croûtes, bouton infecté, doigt infecté"],
+  ["Morsure de chat", "morsure, chat, animal"],
+  ["Mycose des plis", "champignon, plis, aine, sous les seins, rougeur"],
+  ["Lyme", "tique, morsure de tique, piqûre de tique"],
+  ["Onychomycose", "ongle, champignon d'ongle, ongle jaune, pied"],
+  ["Zona", "bardeaux, éruption douloureuse, cloques, varicelle"],
+  ["Cellulite post", "infection de la peau, piqûre, guêpe, abeille, insecte, rougeur, enflure"],
+  ["Cessation tabagique", "fumer, cigarette, arrêter de fumer, nicotine, timbres, champix, vapoteuse"],
+  ["Infection urinaire", "brûlure en urinant, pipi, cystite, vessie, envie fréquente d'uriner"],
+  ["Calcium", "os, ostéoporose, vitamine, supplément"],
+  ["périnatal", "grossesse, enceinte, vitamines prénatales, acide folique"],
+  ["Diarrhée du voyageur", "turista, diarrhée, vacances"],
+  ["mal des montagnes", "altitude, montagne"],
+  ["paludisme", "malaria, moustiques, sud, afrique"],
+  ["Santé voyage", "vaccins voyage, consultation voyage, vacances"],
+  ["Pédiculose", "poux, lentes, cheveux, école"],
+  ["valve", "dentiste, prothèse valvulaire, cœur, antibiotique avant le dentiste"],
+  ["VIH", "sida, exposition, piqûre d'aiguille, aiguille, relation à risque"],
+  // Conditions non prises en charge
+  ["Bronchite", "toux, poumons, crachats, infection pulmonaire"],
+  ["Cellulite (non liée", "infection de la peau, rougeur, enflure"],
+  ["gonorrhée", "chlamydia, mts, its"],
+  ["Otite moyenne", "mal d'oreille, infection d'oreille, otite, enfant"],
+  ["Prophylaxie influenza", "grippe, prévention"],
+  ["Sinusite", "sinus, nez bouché, pression au visage, mal de tête"]
+];
+
 /* Arbres sur mesure ------------------------------------------------- */
 const ARBRES = {
   infection_urinaire: {
@@ -433,6 +506,16 @@ function esc(s){ return String(s).replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&
 // Petit panier de la couleur indiquée (rappel des paniers de la pharmacie)
 const panierSVG = c => `<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M20 26 L28 10 M44 26 L36 10" stroke="#5b6775" stroke-width="4" stroke-linecap="round"/><path d="M6 26h52l-6 28a4 4 0 0 1-4 3H16a4 4 0 0 1-4-3z" fill="${c}" stroke="#123f8c" stroke-width="2.5"/><path d="M22 34v14M32 34v14M42 34v14" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".7"/></svg>`;
 const pb = p => `<span class="pbadge ${p || "NA"}">${p || "—"}</span>`;
+// Recherche : mots du quotidien -> conditions
+const MOTS_VIDES = new Set("de la le les du des d l un une a au aux et ou pour avec en j ai mon ma mes il elle a est sur dans qui".split(" "));
+const decoupe = s => norm(s).replace(/[^a-z0-9]+/g, " ").split(" ").filter(m => m && !MOTS_VIDES.has(m));
+const racine = m => m.length > 4 ? m.replace(/s$/, "") : m;
+const motsRecherche = s => decoupe(s).map(racine);
+const texteRecherche = (nom, cat) => {
+  const extra = MOTS_CLES.filter(([cle]) => norm(nom).includes(norm(cle))).map(([, m]) => m).join(" ");
+  return " " + decoupe(nom + " " + cat + " " + extra).join(" ") + " ";
+};
+const score = (mots, texte) => mots.filter(m => texte.includes(" " + m)).length;
 const norm = s => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
 function boutonCond(ci, i){
@@ -465,13 +548,18 @@ function accueil(){
   brancher();
   const q = document.getElementById("q"), r = document.getElementById("resultats");
   q.oninput = () => {
-    const t = norm(q.value.trim());
-    if (!t) { r.innerHTML = ""; return; }
+    const mots = motsRecherche(q.value);
+    if (!mots.length) { r.innerHTML = ""; return; }
+    // On garde les conditions qui contiennent TOUS les mots ; sinon, les plus proches.
+    const items = [];
+    CATEGORIES.forEach((cat, ci) => cat.conds.forEach((c, i) =>
+      items.push({ score: score(mots, texteRecherche(c[0], cat.nom)), html: boutonCond(ci, i) })));
+    NON_PRISES_EN_CHARGE.forEach(n => items.push({ score: score(mots, texteRecherche(n, "non prise en charge")),
+      html: `<button class="opt red" data-npec="${esc(n)}"><span class="lbl">${esc(n)}<span class="small">Non prise en charge</span></span></button>` }));
+    const max = Math.max(...items.map(x => x.score));
     let h = "";
-    CATEGORIES.forEach((cat, ci) => cat.conds.forEach((c, i) => {
-      if (norm(c[0] + " " + cat.nom).includes(t)) h += boutonCond(ci, i);
-    }));
-    NON_PRISES_EN_CHARGE.forEach(n => { if (norm(n).includes(t)) h += `<button class="opt red" data-npec="${esc(n)}"><span class="lbl">${esc(n)}<span class="small">Non prise en charge</span></span></button>`; });
+    if (max === mots.length || (max > 0 && max >= mots.length - 1 && mots.length > 2))
+      h = items.filter(x => x.score === max).map(x => x.html).join("");
     r.innerHTML = h ? `<div class="options" style="margin-top:10px">${h}</div>`
       : `<p class="empty">Aucune condition trouvée. <button class="btn" id="nonListee">Conditions non listées</button></p>`;
     brancher();
