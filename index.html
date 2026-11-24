@@ -337,7 +337,7 @@ const ARBRES = {
           { texte: "Homme", suivant: "res_homme" }
         ]},
       alarme: { type: "question", titre: "La patiente présente-t-elle un de ces signes ?",
-        cases: true,
+        cases: true, aide: "Cocher le signe présent : le guide continue automatiquement.",
         liste: ["Fièvre ou frissons", "Douleur au dos ou au flanc", "Nausées ou vomissements",
                 "Grossesse (ou possibilité)", "Infection urinaire dans les 30 derniers jours", "Moins de 14 ans"],
         options: [
@@ -626,6 +626,16 @@ function afficher(){
       vue.historique.push({ noeud: vue.courant, reponse: o.texte });
       vue.courant = o.suivant;
       afficher();
+    });
+    // Liste à cocher : dès qu'une case est cochée, le guide continue seul (réponse « Oui »)
+    if (n.cases) app.querySelectorAll(".cases input").forEach(cb => cb.onchange = () => {
+      if (!cb.checked) return;
+      const signe = cb.parentElement.textContent.trim();
+      setTimeout(() => {
+        vue.historique.push({ noeud: vue.courant, reponse: "Oui — " + signe });
+        vue.courant = n.options[0].suivant;
+        afficher();
+      }, 350);
     });
   } else {
     // Patient vu sur place = toujours P1 (le jour même)
